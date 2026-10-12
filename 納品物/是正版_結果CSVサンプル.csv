@@ -1,0 +1,11 @@
+﻿対象URL,結果,確信度,判定根拠種別,検出文言/受付番号,確認前URL,確認後URL,フォーム残存,理由,お問い合わせURL,判定日時,使用メッセージ,注意
+https://example-a.co.jp/,受付確認,高,完了URLへの遷移＋フォーム消失,https://example-a.co.jp/contact/thanks,https://example-a.co.jp/contact/,https://example-a.co.jp/contact/thanks,消失,受付確認（完了URLへ遷移＋フォーム消失）,https://example-a.co.jp/contact/,2026-10-12 06:31:05,"ご担当者さま
+突然のご連絡失礼いたします。…（本文）",「受付確認」はフォーム上の完了表示・受付番号等に基づく確認であり、先方へのメール到達・対応完了を保証するものではありません。
+https://example-b.co.jp/,受付確認,高,受付番号/問い合わせ番号を検出,受付番号 123456,https://example-b.co.jp/inquiry/,https://example-b.co.jp/inquiry/,消失,受付確認（送信後に新規表示された受付番号を検出）,https://example-b.co.jp/inquiry/,2026-10-12 06:31:05,"ご担当者さま
+突然のご連絡失礼いたします。…（本文）",「受付確認」はフォーム上の完了表示・受付番号等に基づく確認であり、先方へのメール到達・対応完了を保証するものではありません。
+https://example-c.co.jp/,送信処理完了（推定）,低,エラー非表示のみ（確証なし）,,https://example-c.co.jp/contact/,https://example-c.co.jp/contact/,残存,送信処理は完了（受付確認の証跡なし）,https://example-c.co.jp/contact/,2026-10-12 06:31:05,"ご担当者さま
+突然のご連絡失礼いたします。…（本文）",送信操作は完了しましたが、先方での受付・到達は確認できていません（推定判定）。確実な到達保証ではありません。
+https://example-d.co.jp/,失敗,-,なし,入力してください（必須）,https://example-d.co.jp/contact/,https://example-d.co.jp/contact/,残存,バリデーションエラー,https://example-d.co.jp/contact/,2026-10-12 06:31:05,,
+https://example-e.co.jp/,失敗,-,なし,URLは入力できません,,,残存,URL入力が拒否されました（URL記載不可）,https://example-e.co.jp/contact/,2026-10-12 06:31:05,,
+https://example-f.co.jp/,スキップ,-,なし,,,,-,NGフレーズが検出されました: 営業禁止,https://example-f.co.jp/contact/,2026-10-12 06:31:05,,
+https://example-g.co.jp/,スキップ,-,なし,,,,-,お問い合わせページが見つかりませんでした,,2026-10-12 06:31:05,,

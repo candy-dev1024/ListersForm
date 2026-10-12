@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>納品進捗ダッシュボード</title>
+<style>
+  /* レイアウト: 上部に進捗サマリ（リング＋タイル）→ 区分別バー → 納品順チェックリスト */
+  :root{
+    --bg:#f4f6f9; --surface:#ffffff; --surface-2:#f0f3f8;
+    --fg:#172030; --muted:#5a6678; --line:#e2e8f1;
+    --accent:#0070c0; --accent-soft:#e3f0fb;
+    --done:#0b8a5f; --done-soft:#e2f3ec;
+    --pend:#b06a00; --pend-soft:#fbf0dd;
+    --ring-track:#e6ebf3;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#0f141b; --surface:#171f2a; --surface-2:#1e2733;
+    --fg:#e7edf5; --muted:#9aa7b8; --line:#2a3542;
+    --accent:#4aa3e0; --accent-soft:#16304a;
+    --done:#43c08c; --done-soft:#123026;
+    --pend:#e0a94a; --pend-soft:#332813;
+    --ring-track:#273140;
+    color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#0f141b; --surface:#171f2a; --surface-2:#1e2733;
+    --fg:#e7edf5; --muted:#9aa7b8; --line:#2a3542;
+    --accent:#4aa3e0; --accent-soft:#16304a;
+    --done:#43c08c; --done-soft:#123026;
+    --pend:#e0a94a; --pend-soft:#332813;
+    --ring-track:#273140;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--fg);
+    font-family:"Yu Gothic","YuGothic","Hiragino Kaku Gothic ProN","Meiryo",system-ui,sans-serif;
+    font-size:15px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px; margin:0 auto; padding-block:28px; padding-left:16px; padding-right:16px}
+  .head{display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 14px; margin-bottom:22px}
+  .head h1{font-size:1.5rem; margin:0; letter-spacing:.01em; text-wrap:balance}
+  .head .sub{color:var(--muted); font-size:.92rem}
+  .head .date{margin-left:auto; color:var(--muted); font-size:.82rem; font-variant-numeric:tabular-nums}
+
+  .grid{display:grid; gap:14px}
+  .top{grid-template-columns:minmax(220px,300px) 1fr; align-items:stretch}
+  @media (max-width:640px){ .top{grid-template-columns:1fr} }
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:18px}
+
+  /* 進捗リング */
+  .ring-card{display:flex; align-items:center; gap:18px}
+  .ring{flex:0 0 auto}
+  .ring .pct{font-size:1.9rem; font-weight:700; fill:var(--fg); font-variant-numeric:tabular-nums}
+  .ring .pctlabel{fill:var(--muted); font-size:.62rem; letter-spacing:.08em}
+  .ring-meta .big{font-size:1.05rem; font-weight:700}
+  .ring-meta .small{color:var(--muted); font-size:.85rem}
+
+  /* タイル */
+  .tiles{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+  @media (max-width:640px){ .tiles{grid-template-columns:repeat(3,1fr)} }
+  @media (max-width:420px){ .tiles{grid-template-columns:1fr 1fr} }
+  .tile .n{font-size:1.7rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.1}
+  .tile .k{color:var(--muted); font-size:.8rem; margin-top:4px}
+  .tile.done .n{color:var(--done)} .tile.pend .n{color:var(--muted)} .tile.wip .n{color:var(--pend)} .tile.free .n{color:var(--accent)}
+
+  /* 区分別バー */
+  .cats{margin-top:4px}
+  .cat{display:grid; grid-template-columns:76px 1fr auto; align-items:center; gap:12px; padding:9px 0}
+  .cat + .cat{border-top:1px solid var(--line)}
+  .cat .lab{font-size:.9rem; font-weight:600}
+  .bar{height:9px; border-radius:6px; background:var(--ring-track); overflow:hidden; min-width:0}
+  .bar > span{display:block; height:100%; border-radius:6px; background:var(--accent)}
+  .cat .frac{font-size:.82rem; color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+  .section-h{font-size:.78rem; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:26px 2px 10px}
+
+  /* チェックリスト */
+  .list{display:flex; flex-direction:column; gap:10px}
+  .item{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:14px;
+        background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px}
+  .item.is-done{border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
+  .item.is-wip{border-color:color-mix(in srgb,var(--pend) 35%,var(--line))}
+  .mark{width:28px; height:28px; border-radius:50%; display:grid; place-items:center; flex:0 0 auto}
+  .is-done .mark{background:var(--accent); color:#fff}
+  .is-wip .mark{background:var(--pend); color:#fff}
+  .is-pend .mark{border:2px dashed var(--line); color:transparent}
+  .mark svg{width:16px; height:16px; display:block}
+  .body{min-width:0}
+  .body .no{color:var(--muted); font-variant-numeric:tabular-nums; font-size:.8rem; margin-right:6px}
+  .body .name{font-weight:600}
+  .body .name .sub2{display:block; color:var(--muted); font-weight:400; font-size:.82rem; margin-top:2px}
+  .meta{display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex:0 0 auto}
+  .badge{font-size:.72rem; padding:2px 9px; border-radius:999px; border:1px solid var(--line); color:var(--muted); white-space:nowrap}
+  .badge.free{color:var(--accent); border-color:color-mix(in srgb,var(--accent) 35%,var(--line)); background:var(--accent-soft)}
+  .pill{font-size:.74rem; font-weight:600; padding:3px 10px; border-radius:999px; white-space:nowrap}
+  .pill.done{color:var(--done); background:var(--done-soft)}
+  .pill.pend{color:var(--pend); background:var(--pend-soft)}
+  .pill.next{color:#fff; background:var(--accent)}
+  .pill.wip{color:#fff; background:var(--pend)}
+
+  .callout{margin-top:22px; background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));
+           border-radius:12px; padding:14px 16px}
+  .callout b{color:var(--accent)}
+  .foot{color:var(--muted); font-size:.78rem; margin-top:18px; text-align:center}
+  @media (max-width:480px){
+    .item{grid-template-columns:auto 1fr; }
+    .meta{flex-direction:row; grid-column:1 / -1; justify-content:flex-start; padding-left:42px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <h1>納品進捗ダッシュボード</h1>
+    <span class="sub">お問い合わせフォーム送信ツール 改修・引き継ぎ</span>
+    <span class="date">2026-10-12 時点</span>
+  </header>
+
+  <div class="grid top">
+    <!-- 全体進捗リング -->
+    <div class="card ring-card">
+      <svg class="ring" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="全体進捗 57%">
+        <circle cx="64" cy="64" r="52" fill="none" stroke="var(--ring-track)" stroke-width="13"/>
+        <circle cx="64" cy="64" r="52" fill="none" stroke="var(--accent)" stroke-width="13"
+                stroke-linecap="round" stroke-dasharray="186.7 326.7" transform="rotate(-90 64 64)"/>
+        <text class="pct" x="64" y="62" text-anchor="middle" dominant-baseline="middle">57%</text>
+        <text class="pctlabel" x="64" y="82" text-anchor="middle">ZENTAI</text>
+      </svg>
+      <div class="ring-meta">
+        <div class="big">納品済み 4 / 7</div>
+        <div class="small">項目5は成果物の作成完了・実環境確認待ち（納品準備中）</div>
+      </div>
+    </div>
+
+    <!-- サマリタイル -->
+    <div class="tiles">
+      <div class="card tile done"><div class="n">4</div><div class="k">納品済み</div></div>
+      <div class="card tile wip"><div class="n">1</div><div class="k">作成完了・検証待ち</div></div>
+      <div class="card tile pend"><div class="n">2</div><div class="k">未着手</div></div>
+    </div>
+  </div>
+
+  <!-- 区分別 -->
+  <div class="card cats" style="margin-top:14px">
+    <div class="cat">
+      <span class="lab">無償</span>
+      <span class="bar"><span style="width:80%"></span></span>
+      <span class="frac">4 / 5 納品済み（1件 検証待ち）</span>
+    </div>
+    <div class="cat">
+      <span class="lab">契約</span>
+      <span class="bar"><span style="width:0%"></span></span>
+      <span class="frac">0 / 1</span>
+    </div>
+    <div class="cat">
+      <span class="lab">有償</span>
+      <span class="bar"><span style="width:0%"></span></span>
+      <span class="frac">0 / 1</span>
+    </div>
+  </div>
+
+  <div class="section-h">納品物（納品すべき順）</div>
+  <div class="list">
+
+    <div class="item is-done">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div class="body"><div class="name"><span class="no">1</span>原因調査結果<span class="sub2">成功判定の仕組み・929件乖離の原因</span></div></div>
+      <div class="meta"><span class="badge free">無償</span><span class="pill done">納品済み</span></div>
+    </div>
+
+    <div class="item is-done">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div class="body"><div class="name"><span class="no">2</span>検証計画書</div></div>
+      <div class="meta"><span class="badge free">無償</span><span class="pill done">納品済み</span></div>
+    </div>
+
+    <div class="item is-done">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div class="body"><div class="name"><span class="no">3</span>フェーズ1：929件の切り分け結果<span class="sub2">切り分けCSV＋報告書</span></div></div>
+      <div class="meta"><span class="badge free">無償</span><span class="pill done">納品済み</span></div>
+    </div>
+
+    <div class="item is-done">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div class="body"><div class="name"><span class="no">4</span>フェーズ2：静的検証結果<span class="sub2">全1,572件CSV＋報告書</span></div></div>
+      <div class="meta"><span class="badge free">無償</span><span class="pill done">納品済み</span></div>
+    </div>
+
+    <div class="item is-wip">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg></span>
+      <div class="body"><div class="name"><span class="no">5</span>是正版ツール本体<span class="sub2">成果物：是正版ソース一式＋EXE＋結果CSVサンプル＋操作マニュアル＋修正後検証結果報告書。是正判定は実ブラウザE2E（12ケース）で検証済み。GUIの見た目のみ利用環境で最終確認</span></div></div>
+      <div class="meta"><span class="badge free">無償</span><span class="pill wip">検証完了・納品可</span></div>
+    </div>
+
+    <div class="item is-pend">
+      <span class="mark"></span>
+      <div class="body"><div class="name"><span class="no">6</span>ソース一式＋技術資料＋利用条件<span class="sub2">依存ライブラリ／環境構築／exeビルド／設定・CSV・ログ仕様／判定ロジック説明／改変・再ビルド・社内利用・外部保守の可否</span></div></div>
+      <div class="meta"><span class="badge">契約</span><span class="pill pend">契約合意後</span></div>
+    </div>
+
+    <div class="item is-pend">
+      <span class="mark"></span>
+      <div class="body"><div class="name"><span class="no">7</span>追加改修<span class="sub2">受付・到達確認の新規実装／判定不能分の対応</span></div></div>
+      <div class="meta"><span class="badge">有償</span><span class="pill pend">有償・別途</span></div>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    次のアクション：<b>5 是正版ツール本体</b> は成果物を作成完了。利用環境で EXEビルド＋少量リストの実ブラウザ確認を行い、問題なければ顧客へ納品（→「納品済み」へ更新）。6（ソース・資料＋利用条件）は契約合意後、7（追加改修）は有償・別途です。
+  </div>
+
+  <div class="foot">凡例　● 青チェック＝納品済み　／　● 橙＝作成完了（実環境確認待ち）　／　点線○＝未着手</div>
+
+</div>
+</body>
+</html>

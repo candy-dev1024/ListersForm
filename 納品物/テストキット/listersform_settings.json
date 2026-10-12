@@ -1,0 +1,23 @@
+{
+  "config": {
+    "direct_mode": true,
+    "headless": false,
+    "parallel_count": 1,
+    "skip_if_no_sonota": true,
+    "duplicate_check": false,
+    "time_restriction_enabled": false,
+    "day_restriction_enabled": false
+  },
+  "form_data": {
+    "company_name": "テスト株式会社",
+    "full_name": "山田太郎",
+    "full_name_kana": "ヤマダタロウ",
+    "email": "test@example.com",
+    "phone": "03-0000-0000",
+    "prefecture": "東京都",
+    "city": "港区",
+    "address": "1-1-1",
+    "subject": "テスト"
+  },
+  "common_message": "これはテスト用の本文です。よろしくお願いいたします。"
+}

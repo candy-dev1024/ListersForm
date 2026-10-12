@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "config": {
+    "parallel_count": 1,
+    "headless": true,
+    "skip_if_no_sonota": true,
+    "direct_mode": false,
+    "duplicate_check": false,
+    "time_restriction_enabled": false,
+    "time_restriction_start": "20:00",
+    "time_restriction_end": "08:00",
+    "day_restriction_enabled": false,
+    "day_restriction_days": []
+  },
+  "form_data": {
+    "company_name": "",
+    "department": "",
+    "full_name": "",
+    "full_name_kana": "",
+    "last_name": "",
+    "first_name": "",
+    "last_name_kana": "",
+    "first_name_kana": "",
+    "email": "",
+    "phone": "",
+    "url": "",
+    "postal_code": "",
+    "prefecture": "",
+    "city": "",
+    "address": "",
+    "subject": ""
+  },
+  "common_message": "ご担当者さま\n\n（本文。本文内に【company】があれば、送信先リストB列の文面に差し替えて送信します）"
+}
