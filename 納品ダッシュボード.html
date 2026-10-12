@@ -126,24 +126,24 @@
   <div class="grid top">
     <!-- 全体進捗リング -->
     <div class="card ring-card">
-      <svg class="ring" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="全体進捗 57%">
+      <svg class="ring" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="全体進捗 71%">
         <circle cx="64" cy="64" r="52" fill="none" stroke="var(--ring-track)" stroke-width="13"/>
         <circle cx="64" cy="64" r="52" fill="none" stroke="var(--accent)" stroke-width="13"
-                stroke-linecap="round" stroke-dasharray="186.7 326.7" transform="rotate(-90 64 64)"/>
-        <text class="pct" x="64" y="62" text-anchor="middle" dominant-baseline="middle">57%</text>
+                stroke-linecap="round" stroke-dasharray="233.4 326.7" transform="rotate(-90 64 64)"/>
+        <text class="pct" x="64" y="62" text-anchor="middle" dominant-baseline="middle">71%</text>
         <text class="pctlabel" x="64" y="82" text-anchor="middle">ZENTAI</text>
       </svg>
       <div class="ring-meta">
-        <div class="big">納品済み 4 / 7</div>
-        <div class="small">項目5は成果物の作成完了・実環境確認待ち（納品準備中）</div>
+        <div class="big">納品済み 5 / 7</div>
+        <div class="small">無償対応（項目1〜5）を納品完了。残りは 6（契約）・7（有償）。</div>
       </div>
     </div>
 
     <!-- サマリタイル -->
     <div class="tiles">
-      <div class="card tile done"><div class="n">4</div><div class="k">納品済み</div></div>
-      <div class="card tile wip"><div class="n">1</div><div class="k">作成完了・検証待ち</div></div>
+      <div class="card tile done"><div class="n">5</div><div class="k">納品済み</div></div>
       <div class="card tile pend"><div class="n">2</div><div class="k">未着手</div></div>
+      <div class="card tile free"><div class="n">100%</div><div class="k">無償範囲の進捗（5/5）</div></div>
     </div>
   </div>
 
@@ -151,8 +151,8 @@
   <div class="card cats" style="margin-top:14px">
     <div class="cat">
       <span class="lab">無償</span>
-      <span class="bar"><span style="width:80%"></span></span>
-      <span class="frac">4 / 5 納品済み（1件 検証待ち）</span>
+      <span class="bar"><span style="width:100%"></span></span>
+      <span class="frac">5 / 5 納品済み</span>
     </div>
     <div class="cat">
       <span class="lab">契約</span>
@@ -193,10 +193,10 @@
       <div class="meta"><span class="badge free">無償</span><span class="pill done">納品済み</span></div>
     </div>
 
-    <div class="item is-wip">
-      <span class="mark"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="4"/></svg></span>
-      <div class="body"><div class="name"><span class="no">5</span>是正版ツール本体<span class="sub2">成果物：是正版ソース一式＋EXE＋結果CSVサンプル＋操作マニュアル＋修正後検証結果報告書。是正判定は実ブラウザE2E（12ケース）で検証済み。GUIの見た目のみ利用環境で最終確認</span></div></div>
-      <div class="meta"><span class="badge free">無償</span><span class="pill wip">検証完了・納品可</span></div>
+    <div class="item is-done">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+      <div class="body"><div class="name"><span class="no">5</span>是正版ツール本体<span class="sub2">EXE＋修正後検証結果報告書＋結果CSVサンプル＋操作マニュアル＋テストキットを納品。実ブラウザE2E（12ケース）検証済み。</span></div></div>
+      <div class="meta"><span class="badge free">無償</span><span class="pill done">納品済み</span></div>
     </div>
 
     <div class="item is-pend">
@@ -214,10 +214,10 @@
   </div>
 
   <div class="callout">
-    次のアクション：<b>5 是正版ツール本体</b> は成果物を作成完了。利用環境で EXEビルド＋少量リストの実ブラウザ確認を行い、問題なければ顧客へ納品（→「納品済み」へ更新）。6（ソース・資料＋利用条件）は契約合意後、7（追加改修）は有償・別途です。
+    次のアクション：無償対応（項目1〜5）は納品完了。残りは <b>6 ソース・資料＋利用条件</b>（契約合意後）と <b>7 追加改修</b>（有償・別途）です。
   </div>
 
-  <div class="foot">凡例　● 青チェック＝納品済み　／　● 橙＝作成完了（実環境確認待ち）　／　点線○＝未着手</div>
+  <div class="foot">凡例　● 青チェック＝納品済み　／　点線○＝未着手</div>
 
 </div>
 </body>
