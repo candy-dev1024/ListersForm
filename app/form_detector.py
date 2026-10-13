@@ -516,10 +516,12 @@ class FormDetector:
         form_remained = "残存" if form_present else "消失"
         url_changed = _norm_url(url_before) != _norm_url(url_after)
         url_completion = any(p.lower() in (url_after or "").lower() for p in config.COMPLETION_URL_PATTERNS)
+        # 遷移先が案内／配信停止／保証等のページの場合は受付確認として扱わない
+        non_completion = any(k.lower() in (url_after or "").lower() for k in config.NON_COMPLETION_URL_KEYWORDS)
 
-        # (A) 受付番号（送信後に新規表示されたものに限る）
+        # (A) 受付番号（送信後に新規表示された『ラベル＋実番号』に限る。案内/配信停止等の遷移先は除外）
         receipt = self._find_new_receipt(self._pre_text, text)
-        if receipt:
+        if receipt and not non_completion:
             return SubmitOutcome(
                 status=config.RESULT_RECEIPT_CONFIRMED, reason="受付確認（送信後に新規表示された受付番号を検出）",
                 evidence_type=config.EVIDENCE_RECEIPT_NUMBER, evidence_detail=receipt,
@@ -528,16 +530,16 @@ class FormDetector:
 
         strong = self._first_phrase(text, config.STRONG_SUCCESS_PHRASES)
 
-        # (B) URL遷移（完了ページ）＋フォーム消失
-        if url_changed and url_completion and not form_present:
+        # (B) URL遷移（完了ページ）＋フォーム消失（案内/配信停止等の遷移先は除外）
+        if url_changed and url_completion and not form_present and not non_completion:
             return SubmitOutcome(
                 status=config.RESULT_RECEIPT_CONFIRMED, reason="受付確認（完了URLへ遷移＋フォーム消失）",
                 evidence_type=config.EVIDENCE_URL_TRANSITION,
                 evidence_detail=url_after, url_before=url_before, url_after=url_after,
                 form_remained=form_remained, confidence=config.CONFIDENCE_HIGH, steps=steps)
 
-        # (C) 明確な完了文言＋フォーム消失
-        if strong and not form_present:
+        # (C) 明確な完了文言＋フォーム消失（案内/配信停止等の遷移先は除外）
+        if strong and not form_present and not non_completion:
             return SubmitOutcome(
                 status=config.RESULT_RECEIPT_CONFIRMED, reason="受付確認（完了文言＋フォーム消失）",
                 evidence_type=config.EVIDENCE_COMPLETION_MSG, evidence_detail=strong,
@@ -565,14 +567,24 @@ class FormDetector:
             confidence=conf, steps=steps)
 
     def _find_new_receipt(self, pre_text: str, post_text: str) -> str:
-        """送信後(post)に出現し、送信前(pre)には無かった受付番号のみを返す。"""
+        """送信後(post)に『新規表示された受付番号（ラベル＋実番号）』のみを返す。
+
+        受付確認の根拠にできる条件（すべて満たす場合のみ）:
+          1) ラベル（受付番号・問い合わせ番号 等）の直後に識別子があること
+          2) その識別子が実際の番号であること（数字を1文字以上含む）
+             … 案内文中の「受付番号をお知らせします」等の“語のみ”は不可
+          3) 送信前(pre)には存在せず、送信後(post)に新規表示されたこと
+        条件を満たすものが無ければ空文字（＝受付確認の根拠にしない）。
+        """
         pre = pre_text or ""
-        for pat in config.RECEIPT_NUMBER_PATTERNS:
-            m = re.search(pat, post_text, re.IGNORECASE)
-            if m and not re.search(pat, pre, re.IGNORECASE):
-                s = max(0, m.start() - 4)
-                e = min(len(post_text), m.end() + 20)
-                return post_text[s:e].replace("\n", " ").strip()[:60]
+        for m in re.finditer(config.RECEIPT_NUMBER_REGEX, post_text, re.IGNORECASE):
+            ident = m.group(1) or ""
+            if not any(ch.isdigit() for ch in ident):
+                continue  # 実際の識別番号（数字）が無い＝語のみ → 根拠にしない
+            full = m.group(0).replace("\n", " ").strip()
+            if full and full in pre:
+                continue  # 送信前から表示されている → 新規でない
+            return full[:60]
         return ""
 
     def _first_phrase(self, text: str, phrases: list[str]) -> str:

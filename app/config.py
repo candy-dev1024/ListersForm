@@ -257,12 +257,25 @@ COMPLETION_URL_PATTERNS = [
     "受付完了", "送信完了", "完了",
 ]
 
-# (A-2) 受付番号/問い合わせ番号を示す正規表現
-RECEIPT_NUMBER_PATTERNS = [
-    r"受付番号", r"受付No", r"受付ナンバー",
-    r"問い?合わ?せ番号", r"お問い?合わ?せ番号",
-    r"整理番号", r"管理番号", r"ご相談番号", r"申込番号",
-    r"(?:reference|ticket|inquiry|case)\s*(?:no\.?|number|#|id)",
+# (A-2) 受付番号/問い合わせ番号
+#   ラベル語だけでは不可。ラベル＋「実際の識別番号（数字を含む）」が必須。
+#   （案内文中の「受付番号をお知らせします」等の“語のみ”を受付確認の根拠にしない）
+RECEIPT_LABEL_REGEX = (
+    r"(?:受付番号|受付\s*No\.?|受付ナンバー|受付ID|受付コード|"
+    r"お?問い?合わ?せ番号|お?問い?合わ?せID|整理番号|管理番号|ご相談番号|申込番号|"
+    r"(?:reference|ticket|inquiry|case|confirmation)\s*(?:no\.?|number|id|code)?)"
+)
+# ラベルの直後（区切り数文字以内）に、英数字3文字以上の識別子。数字を含むことはコード側で確認。
+RECEIPT_NUMBER_REGEX = RECEIPT_LABEL_REGEX + r"[\s:：#＃=・．.\-]{0,4}([A-Za-z0-9][A-Za-z0-9\-_/]{2,})"
+
+# 旧パターン（参考・未使用）
+RECEIPT_NUMBER_PATTERNS = [r"受付番号", r"問い合わせ番号", r"整理番号"]
+
+# 受付確認として扱わない遷移先（案内・配信停止・保証等）。URLに含まれる場合は受付確認にしない。
+NON_COMPLETION_URL_KEYWORDS = [
+    "unsubscribe", "opt-out", "optout", "opt_out", "mailstop", "stop-mail",
+    "配信停止", "haishin", "kaijo", "解除", "退会", "withdraw",
+    "保証", "warranty", "hosho", "faq", "annai",
 ]
 
 # (A-3) 強い完了文言（これ単独＋フォーム消失 で受付確認とみなす）
